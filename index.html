@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador Renta España + Canarias v4</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-badge">Renta 2025 / Campaña 2026</div>
+        <h1>Simulador Pro v4</h1>
+        <p>España + bloque autonómico ampliado de Canarias, con referencias AEAT visibles en los campos.</p>
+      </div>
+
+      <nav class="side-nav" id="sideNav">
+        <button class="nav-link active" data-step="0">01 · Personal</button>
+        <button class="nav-link" data-step="1">02 · Ingresos</button>
+        <button class="nav-link" data-step="2">03 · Vivienda e inmuebles</button>
+        <button class="nav-link" data-step="3">04 · Reducciones y deducciones</button>
+        <button class="nav-link" data-step="4">05 · Canarias</button>
+        <button class="nav-link" data-step="5">06 · Retenciones</button>
+        <button class="nav-link" data-step="6">07 · Resultado</button>
+      </nav>
+
+      <section class="status-card">
+        <h2>Diagnóstico rápido</h2>
+        <div id="obligacionBox" class="status-box neutral">
+          Completa el formulario para estimar si estás obligado a declarar.
+        </div>
+        <div class="mini-metrics" id="miniMetrics"></div>
+      </section>
+
+      <section class="status-card compact">
+        <h2>Acciones</h2>
+        <div class="stack">
+          <button class="btn btn-primary" id="btnCalcular">Calcular v4</button>
+          <button class="btn btn-secondary" id="btnExportar">Exportar JSON</button>
+          <button class="btn btn-secondary" id="btnImprimir">Imprimir / PDF</button>
+          <button class="btn btn-ghost" id="btnReset">Reiniciar</button>
+        </div>
+      </section>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">Simulación orientativa</div>
+          <h2>Declaración de la renta · ejercicio 2025</h2>
+          <p>Diseñada para revisión rápida antes de contrastar con Renta Web y certificados reales.</p>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-text"><span id="progressCurrent">1</span>/7</div>
+          <div class="progress-bar"><span id="progressFill"></span></div>
+        </div>
+      </header>
+
+      <form id="rentaForm">
+        <section class="step active" data-step="0">
+          <div class="section-header">
+            <h3>Datos personales y familiares</h3>
+            <p>Mínimo personal y familiar, modalidad de tributación y pistas de obligación de declarar.</p>
+          </div>
+          <div class="card-grid">
+            <article class="card">
+              <h4>Situación personal</h4>
+              <div class="field-grid two">
+                <label class="field">
+                  <span class="field-top"><span>Edad</span><span class="ref">Ref AEAT: mínimo personal / umbrales</span></span>
+                  <input type="number" id="edad" min="18" max="99" placeholder="35">
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>Estado civil</span><span class="ref">Ref AEAT: datos identificativos</span></span>
+                  <select id="estadoCivil">
+                    <option value="soltero">Soltero/a</option>
+                    <option value="casado">Casado/a</option>
+                    <option value="viudo">Viudo/a</option>
+                    <option value="divorciado">Divorciado/a o separado/a</option>
+                  </select>
+                </label>
+                <div class="field">
+                  <span class="field-top"><span>Tributación</span><span class="ref">Ref AEAT: modalidad de declaración</span></span>
+                  <div class="chip-group">
+                    <label class="chip"><input type="radio" name="tributacion" value="individual" checked><span>Individual</span></label>
+                    <label class="chip"><input type="radio" name="tributacion" value="conjunta"><span>Conjunta</span></label>
+                  </div>
+                </div>
+                <label class="field">
+                  <span class="field-top"><span>Comunidad autónoma</span><span class="ref">Ref AEAT: deducciones autonómicas</span></span>
+                  <select id="comunidad">
+                    <option value="canarias">Canarias</option>
+                    <option value="madrid">Madrid</option>
+                    <option value="andalucia">Andalucía</option>
+                    <option value="cataluna">Cataluña</option>
+                    <option value="valencia">C. Valenciana</option>
+                    <option value="galicia">Galicia</option>
+                    <option value="pais_vasco">País Vasco</option>
+                    <option value="navarra">Navarra</option>
+                    <option value="otras">Otras</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>Discapacidad</span><span class="ref">Ref AEAT: mínimo personal y familiar</span></span>
+                  <select id="discapacidad">
+                    <option value="0">Sin discapacidad</option>
+                    <option value="1">33%–64%</option>
+                    <option value="2">65% o más</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>¿Mayor de 65?</span><span class="ref">Ref AEAT: mínimo personal / Canarias enfermedad</span></span>
+                  <select id="mayor65">
+                    <option value="no">No</option>
+                    <option value="si">Sí</option>
+                  </select>
+                </label>
+              </div>
+            </article>
+
+            <article class="card">
+              <h4>Familia</h4>
+              <div class="field-grid two">
+                <label class="field">
+                  <span class="field-top"><span>Hijos a cargo</span><span class="ref">Ref AEAT: descendientes</span></span>
+                  <input type="number" id="hijos" min="0" max="10" value="0">
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>Hijos menores de 3 años</span><span class="ref">Ref AEAT: [0611] / [0612]</span></span>
+                  <input type="number" id="hijosMenores3" min="0" max="10" value="0">
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>Ascendientes a cargo</span><span class="ref">Ref AEAT: mínimo por ascendientes</span></span>
+                  <input type="number" id="ascendientes" min="0" max="4" value="0">
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>Familia numerosa</span><span class="ref">Ref AEAT: [0660] / [0661]</span></span>
+                  <select id="familiaNumerosa">
+                    <option value="0">No</option>
+                    <option value="1">General</option>
+                    <option value="2">Especial</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>Monoparental</span><span class="ref">Ref Canarias: deducción autonómica</span></span>
+                  <select id="monoparental">
+                    <option value="no">No</option>
+                    <option value="si">Sí</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>Nacimientos / adopciones 2025</span><span class="ref">Ref Canarias: nacimiento o adopción</span></span>
+                  <input type="number" id="nacimientos2025" min="0" max="10" value="0">
+                </label>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="step" data-step="1">
+          <div class="section-header">
+            <h3>Ingresos</h3>
+            <p>Trabajo, capital, actividades económicas y varios pagadores.</p>
+          </div>
+          <div class="card-grid">
+            <article class="card">
+              <h4>Rendimientos del trabajo</h4>
+              <div class="field-grid two">
+                <label class="field money">
+                  <span class="field-top"><span>Salario bruto anual</span><span class="ref">Ref AEAT: rendimientos del trabajo</span></span>
+                  <input type="number" id="salarioBruto" min="0" placeholder="30000">
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>Número de pagadores</span><span class="ref">Ref AEAT: obligación de declarar</span></span>
+                  <select id="numPagadores">
+                    <option value="1">1 pagador</option>
+                    <option value="2">2 o más pagadores</option>
+                  </select>
+                </label>
+                <label class="field money" id="campoSegundoPagador">
+                  <span class="field-top"><span>Importe del segundo y restantes pagadores</span><span class="ref">Ref AEAT: umbral 1.500 € / 15.876 €</span></span>
+                  <input type="number" id="segundoPagador" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Seguridad Social / mutualidad</span><span class="ref">Ref AEAT: gasto deducible</span></span>
+                  <input type="number" id="ssocial" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Prestación por desempleo</span><span class="ref">Ref AEAT: trabajo</span></span>
+                  <input type="number" id="paro" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Pensión</span><span class="ref">Ref AEAT: pensiones y haberes pasivos</span></span>
+                  <input type="number" id="pension" min="0" value="0">
+                </label>
+              </div>
+            </article>
+
+            <article class="card">
+              <h4>Actividad económica y ahorro</h4>
+              <div class="field-grid two">
+                <label class="field money">
+                  <span class="field-top"><span>Rendimiento neto autónomo</span><span class="ref">Ref AEAT: estimación directa</span></span>
+                  <input type="number" id="autonomo" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Cuotas RETA / mutualidad</span><span class="ref">Ref AEAT: [0196]</span></span>
+                  <input type="number" id="reta" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Módulos</span><span class="ref">Ref AEAT: estimación objetiva</span></span>
+                  <input type="number" id="modulos" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Dividendos e intereses</span><span class="ref">Ref AEAT: base del ahorro</span></span>
+                  <input type="number" id="dividendos" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Ganancias patrimoniales</span><span class="ref">Ref AEAT: base del ahorro</span></span>
+                  <input type="number" id="gananciasCapital" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Pérdidas patrimoniales</span><span class="ref">Ref AEAT: compensación ahorro</span></span>
+                  <input type="number" id="perdidasCapital" min="0" value="0">
+                </label>
+                <label class="field money full">
+                  <span class="field-top"><span>Premios sujetos a gravamen especial</span><span class="ref">Ref AEAT: gravamen especial premios</span></span>
+                  <input type="number" id="premios" min="0" value="0">
+                </label>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="step" data-step="2">
+          <div class="section-header">
+            <h3>Vivienda e inmuebles</h3>
+            <p>Hipoteca antigua, alquiler como inquilino, alquiler como arrendador e imputaciones.</p>
+          </div>
+          <div class="card-grid">
+            <article class="card">
+              <h4>Vivienda habitual</h4>
+              <div class="field-grid two">
+                <div class="field">
+                  <span class="field-top"><span>Hipoteca anterior al 01/01/2013</span><span class="ref">Ref AEAT: deducción vivienda transitoria</span></span>
+                  <div class="chip-group">
+                    <label class="chip"><input type="radio" name="hipoteca" value="si"><span>Sí</span></label>
+                    <label class="chip"><input type="radio" name="hipoteca" value="no" checked><span>No</span></label>
+                  </div>
+                </div>
+                <label class="field money">
+                  <span class="field-top"><span>Importe pagado de hipoteca</span><span class="ref">Ref AEAT: base máxima 9.040 €</span></span>
+                  <input type="number" id="hipotecaPagado" min="0" value="0">
+                </label>
+                <div class="field">
+                  <span class="field-top"><span>Pagas alquiler de vivienda habitual</span><span class="ref">Ref AEAT: alquiler / Anexo B.11</span></span>
+                  <div class="chip-group">
+                    <label class="chip"><input type="radio" name="alqVive" value="si"><span>Sí</span></label>
+                    <label class="chip"><input type="radio" name="alqVive" value="no" checked><span>No</span></label>
+                  </div>
+                </div>
+                <label class="field money">
+                  <span class="field-top"><span>Alquiler anual pagado</span><span class="ref">Ref Canarias: alquiler 24%</span></span>
+                  <input type="number" id="alquilerPagado" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>NIF arrendador</span><span class="ref">Ref AEAT: Anexo B.11</span></span>
+                  <input type="text" id="nifArrendador" placeholder="12345678A">
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>Referencia catastral vivienda alquilada</span><span class="ref">Ref AEAT: Anexo B.11</span></span>
+                  <input type="text" id="refCatastralAlquiler" placeholder="0000000DS0000S0000AA">
+                </label>
+              </div>
+            </article>
+
+            <article class="card">
+              <h4>Otros inmuebles</h4>
+              <div class="field-grid two">
+                <label class="field money">
+                  <span class="field-top"><span>Ingresos por alquileres</span><span class="ref">Ref AEAT: capital inmobiliario</span></span>
+                  <input type="number" id="alquilerIngreso" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Gastos deducibles del alquiler</span><span class="ref">Ref AEAT: capital inmobiliario</span></span>
+                  <input type="number" id="alquilerGastos" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Valor catastral no habitual</span><span class="ref">Ref AEAT: imputación inmobiliaria</span></span>
+                  <input type="number" id="valorCatastral" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>¿Contrato residencial para reducción arrendador?</span><span class="ref">Ref Canarias / AEAT: arrendador</span></span>
+                  <select id="alquilerResidencial">
+                    <option value="si">Sí</option>
+                    <option value="no">No</option>
+                  </select>
+                </label>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="step" data-step="3">
+          <div class="section-header">
+            <h3>Reducciones y deducciones generales</h3>
+            <p>Planes de pensiones, donativos, maternidad y gastos deducibles comunes.</p>
+          </div>
+          <div class="card-grid">
+            <article class="card">
+              <h4>Reducciones de base</h4>
+              <div class="field-grid two">
+                <label class="field money">
+                  <span class="field-top"><span>Plan de pensiones individual</span><span class="ref">Ref AEAT: límite general 1.500 €</span></span>
+                  <input type="number" id="planPension" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Plan de empleo / empresa</span><span class="ref">Ref AEAT: incremento hasta 8.500 €</span></span>
+                  <input type="number" id="planEmpresa" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Cuotas sindicales</span><span class="ref">Ref AEAT: gasto deducible trabajo</span></span>
+                  <input type="number" id="sindicatos" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Defensa jurídica laboral</span><span class="ref">Ref AEAT: gasto deducible trabajo</span></span>
+                  <input type="number" id="defensa" min="0" value="0">
+                </label>
+              </div>
+            </article>
+
+            <article class="card">
+              <h4>Deducciones de cuota</h4>
+              <div class="field-grid two">
+                <label class="field money">
+                  <span class="field-top"><span>Donaciones a ONG</span><span class="ref">Ref AEAT: [0722]-[0725]</span></span>
+                  <input type="number" id="donaciones" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>Donación recurrente 3+ años</span><span class="ref">Ref AEAT: porcentaje 45%</span></span>
+                  <select id="donacionRecurrente">
+                    <option value="no">No</option>
+                    <option value="si">Sí</option>
+                  </select>
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Partidos políticos</span><span class="ref">Ref AEAT: deducción 20%</span></span>
+                  <input type="number" id="partidosPoliticos" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>Meses con derecho a maternidad</span><span class="ref">Ref AEAT: [0611]</span></span>
+                  <input type="number" id="mesesMaternidad" min="0" max="36" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Gastos guardería / infantil autorizada</span><span class="ref">Ref AEAT: [0612]</span></span>
+                  <input type="number" id="guarderia" min="0" value="0">
+                </label>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="step" data-step="4">
+          <div class="section-header">
+            <h3>Canarias · módulo autonómico completo</h3>
+            <p>Bloque ampliado con deducciones calculadas y otras de carga manual asistida para no inventar casillas ni requisitos donde la AEAT exige anexos extra.</p>
+          </div>
+          <div class="card-grid single">
+            <article class="card accent">
+              <h4>Deducciones canarias calculadas</h4>
+              <div class="field-grid three">
+                <label class="field money">
+                  <span class="field-top"><span>Gasto de enfermedad</span><span class="ref">Ref Canarias / Anexo B.13</span></span>
+                  <input type="number" id="canGastoEnfermedad" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Ayudas públicas que cubren esos gastos</span><span class="ref">Ref Canarias enfermedad</span></span>
+                  <input type="number" id="canAyudaEnfermedad" min="0" value="0">
+                </label>
+                <label class="field">
+                  <span class="field-top"><span>Discapacidad ≥65% o mayor de 65</span><span class="ref">Ref Canarias enfermedad</span></span>
+                  <select id="canExtraEnfermedad">
+                    <option value="no">No</option>
+                    <option value="si">Sí</option>
+                  </select>
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Gastos custodia guardería Canarias</span><span class="ref">Ref Canarias guarderías</span></span>
+                  <input type="number" id="canCustodia" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Cuotas SS empleada de hogar</span><span class="ref">Ref Canarias empleados hogar</span></span>
+                  <input type="number" id="canEmpleadaHogar" min="0" value="0">
+                </label>
+                <label class="field money">
+                  <span class="field-top"><span>Traslado a otra isla</span><span class="ref">Ref Canarias traslado de residencia</span></span>
+                  <input type="number" id="canTrasladoManual" min="0" value="0" placeholder="importe deducible o 0">
+                </label>
+              </div>
+            </article>
+
+            <article class="card">
+              <h4>Deducciones canarias de introducción manual asistida</h4>
+              <p class="helper">Aquí van importes que suelen requerir comprobaciones documentales o anexos más finos. La app los suma aparte y los etiqueta para revisión final en Renta Web.</p>
+              <div class="field-grid three">
+                <label class="field money"><span class="field-top"><span>Donaciones ecológicas</span><span class="ref">Ref Canarias 1</span></span><input type="number" id="canEco" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Patrimonio histórico</span><span class="ref">Ref Canarias 2</span></span><input type="number" id="canPatrimonio" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Cultura, deporte, I+D o docencia</span><span class="ref">Ref Canarias 3</span></span><input type="number" id="canCultura" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Donaciones a entidades sin ánimo de lucro</span><span class="ref">Ref Canarias 4</span></span><input type="number" id="canESAL" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Restauración de BIC</span><span class="ref">Ref Canarias 6</span></span><input type="number" id="canBIC" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Estudios superiores</span><span class="ref">Ref Canarias 7</span></span><input type="number" id="canEstudiosSup" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Estudios no superiores</span><span class="ref">Ref Canarias 8</span></span><input type="number" id="canEstudiosNoSup" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Acciones nuevas entidades</span><span class="ref">Ref Canarias 10</span></span><input type="number" id="canAcciones" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Contribuyente con discapacidad / +65</span><span class="ref">Ref Canarias 12</span></span><input type="number" id="canMayorDisc" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Acogimiento de menores</span><span class="ref">Ref Canarias 13</span></span><input type="number" id="canAcogimiento" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Obras rehabilitación energética</span><span class="ref">Ref Canarias 18</span></span><input type="number" id="canEnergetica" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Adecuación vivienda por discapacidad</span><span class="ref">Ref Canarias 19</span></span><input type="number" id="canAdecuacionDiscap" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Dación en pago / alquiler habitual</span><span class="ref">Ref Canarias 21</span></span><input type="number" id="canDacion" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Adecuación inmueble para alquilar</span><span class="ref">Ref Canarias 22</span></span><input type="number" id="canAdecuacionAlquiler" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Seguro de impago arrendador</span><span class="ref">Ref Canarias 23</span></span><input type="number" id="canSeguroImpago" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Puesta en mercado de alquiler</span><span class="ref">Ref Canarias 24</span></span><input type="number" id="canMercadoAlquiler" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Contribuyente desempleado</span><span class="ref">Ref Canarias 25</span></span><input type="number" id="canDesempleado" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Familiares dependientes con discapacidad</span><span class="ref">Ref Canarias 27</span></span><input type="number" id="canFamDisc" min="0" value="0"></label>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="step" data-step="5">
+          <div class="section-header">
+            <h3>Retenciones e ingresos a cuenta</h3>
+            <p>Lo que ya has pagado o te han retenido durante el ejercicio.</p>
+          </div>
+          <div class="card-grid">
+            <article class="card">
+              <h4>Retenciones</h4>
+              <div class="field-grid two">
+                <label class="field money"><span class="field-top"><span>Retenciones nómina</span><span class="ref">Ref AEAT: pagos a cuenta</span></span><input type="number" id="retencionNomina" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Retenciones autónomo</span><span class="ref">Ref AEAT: pagos a cuenta</span></span><input type="number" id="retencionAutonomo" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Pagos fraccionados</span><span class="ref">Ref AEAT: mod. 130/131</span></span><input type="number" id="pagosFraccionados" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Retenciones capital mobiliario</span><span class="ref">Ref AEAT: ahorro</span></span><input type="number" id="retencionCapital" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Retenciones pensión / paro</span><span class="ref">Ref AEAT: pagos a cuenta</span></span><input type="number" id="retencionPension" min="0" value="0"></label>
+                <label class="field money"><span class="field-top"><span>Retenciones alquiler</span><span class="ref">Ref AEAT: mod. 115</span></span><input type="number" id="retencionAlquiler" min="0" value="0"></label>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="step" data-step="6">
+          <div class="section-header">
+            <h3>Resultado y revisión</h3>
+            <p>Resumen fiscal, bloque de obligación de declarar y trazabilidad de las deducciones canarias.</p>
+          </div>
+          <div class="hero-result" id="heroResult">
+            <div class="hero-label">Resultado estimado</div>
+            <div class="hero-amount" id="resultadoImporte">0,00 €</div>
+            <div class="hero-text" id="resultadoTexto">Pulsa “Calcular v4”.</div>
+          </div>
+
+          <div class="result-grid" id="resultGrid"></div>
+
+          <article class="card">
+            <h4>Detalle del cálculo</h4>
+            <div class="table-wrap">
+              <table class="result-table" id="detalleTabla"></table>
+            </div>
+          </article>
+
+          <article class="card">
+            <h4>Consejos útiles</h4>
+            <div id="consejosContainer" class="tips"></div>
+          </article>
+
+          <article class="card legal">
+            <h4>Advertencia seria</h4>
+            <p>Este proyecto es un simulador orientativo. No sustituye Renta Web, certificados, datos fiscales, anexos obligatorios ni el criterio de un asesor. Donde la deducción autonómica exija datos extra o prueba documental, el propio simulador lo deja marcado para revisión.</p>
+          </article>
+        </section>
+      </form>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
