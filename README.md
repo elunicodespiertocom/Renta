@@ -1,38 +1,49 @@
-Simulador Renta España + Canarias v4
+# Simulador Renta España + Canarias v5
 
-Proyecto web estático para una simulación orientativa de IRPF del ejercicio 2025 (campaña 2026), con un bloque autonómico ampliado de Canarias.
+Simulador web estático orientativo para IRPF 2025 / campaña 2026, con bloque autonómico de Canarias y una interfaz renovada en **modo claro/oscuro automático** con enfoque móvil tipo app bancaria.
+
+## Novedades v5
+
+- modo claro/oscuro automático según sistema
+- selector manual de tema
+- optimización fuerte para móvil
+- navegación inferior sticky en pantallas pequeñas
+- mejor contraste en inputs, selects y bloques de resultado
+- resumen móvil del paso actual y estado del flujo
+- guardado local, exportación JSON e impresión/PDF
 
 ## Archivos
 
 - `index.html` → interfaz principal
-- `styles.css` → estilos
-- `app.js` → lógica de cálculo y navegación
+- `styles.css` → estilos y responsive
+- `app.js` → lógica fiscal, navegación, tema y persistencia
 
-## Qué incluye
+## Qué mantiene del núcleo fiscal
 
-- navegación por secciones
+- cálculo orientativo de base general y base del ahorro
 - bloque de “obligado a declarar”
-- cálculo orientativo de base general, base del ahorro y resultado
-- referencias AEAT visibles en los campos clave
-- deducciones generales y bloque autonómico de Canarias
-- exportación JSON
-- modo impresión / PDF
-- guardado local en navegador
+- referencias AEAT visibles en campos clave
+- deducciones estatales principales
+- bloque autonómico ampliado de Canarias
+- separación entre deducciones calculadas y deducciones manuales asistidas
 
 ## Importante
 
-Este proyecto NO sustituye:
+Sigue siendo un **simulador orientativo**. No sustituye:
 
 - Renta Web
+- datos fiscales oficiales AEAT
 - certificados de empresa o prestaciones
-- datos fiscales AEAT
-- anexos y validaciones documentales
-- asesoramiento profesional
+- anexos documentales
+- asesoramiento fiscal profesional
 
 ## Uso
 
-Abre `index.html` en el navegador.
+Abre `index.html` en el navegador. Para una experiencia más parecida a una app:
+- usa el tema automático o cambia manualmente con el botón de tema
+- en móvil, navega con la barra inferior sticky
+- calcula y revisa el detalle final antes de exportar
 
 ## Nota técnica
 
-Algunas deducciones canarias están automatizadas y otras se han dejado como carga manual asistida porque la AEAT pide anexos, NIF de terceros, referencias catastrales, justificantes y requisitos específicos que no conviene inventar en un simulador estático.
+En varias deducciones canarias la AEAT exige anexos, NIF de terceros, facturas, referencias catastrales o validaciones adicionales. Por eso parte del bloque autonómico sigue en modo manual asistido: mejor prudencia que inventarse la ley.

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador Renta España + Canarias v4</title>
+  <title>Simulador Renta España + Canarias v5</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-badge">Renta 2025 / Campaña 2026</div>
-        <h1>Simulador Pro v4</h1>
+        <h1>Simulador Pro v5</h1>
         <p>España + bloque autonómico ampliado de Canarias, con referencias AEAT visibles en los campos.</p>
       </div>
 
@@ -39,9 +39,10 @@
       <section class="status-card compact">
         <h2>Acciones</h2>
         <div class="stack">
-          <button class="btn btn-primary" id="btnCalcular">Calcular v4</button>
+          <button class="btn btn-primary" id="btnCalcular">Calcular v5</button>
           <button class="btn btn-secondary" id="btnExportar">Exportar JSON</button>
           <button class="btn btn-secondary" id="btnImprimir">Imprimir / PDF</button>
+          <button class="btn btn-secondary" id="btnTheme" type="button">🖥️ Tema automático</button>
           <button class="btn btn-ghost" id="btnReset">Reiniciar</button>
         </div>
       </section>
@@ -59,6 +60,23 @@
           <div class="progress-bar"><span id="progressFill"></span></div>
         </div>
       </header>
+
+      <section class="mobile-summary card compact" id="mobileSummary">
+        <div class="mobile-summary-grid">
+          <div class="summary-pill">
+            <span class="summary-k">Paso</span>
+            <strong id="mobileStepIndicator">01 / 07</strong>
+          </div>
+          <div class="summary-pill">
+            <span class="summary-k">Estado</span>
+            <strong id="mobileStateIndicator">En edición</strong>
+          </div>
+          <div class="summary-pill">
+            <span class="summary-k">Tema</span>
+            <strong id="mobileThemeIndicator">Auto</strong>
+          </div>
+        </div>
+      </section>
 
       <form id="rentaForm">
         <section class="step active" data-step="0">
@@ -458,7 +476,7 @@
           <div class="hero-result" id="heroResult">
             <div class="hero-label">Resultado estimado</div>
             <div class="hero-amount" id="resultadoImporte">0,00 €</div>
-            <div class="hero-text" id="resultadoTexto">Pulsa “Calcular v4”.</div>
+            <div class="hero-text" id="resultadoTexto">Pulsa “Calcular v5”.</div>
           </div>
 
           <div class="result-grid" id="resultGrid"></div>
@@ -481,6 +499,10 @@
           </article>
         </section>
       </form>
+          <div class="mobile-sticky-actions" id="mobileStickyActions">
+        <button class="btn btn-ghost" type="button" id="mobileBackBtn">← Atrás</button>
+        <button class="btn btn-primary" type="button" id="mobileNextBtn">Siguiente →</button>
+      </div>
     </main>
   </div>
 

@@ -1,4 +1,6 @@
 const STEPS = 7;
+const STORAGE_KEY = 'renta_v5_data';
+const THEME_KEY = 'renta_v5_theme';
 let currentStep = 0;
 let ultimoResultado = null;
 
@@ -35,7 +37,79 @@ function updateProgress() {
 function goTo(step) {
   currentStep = clamp(step, 0, STEPS - 1);
   updateProgress();
+  syncMobileButtons();
+  updateMobileSummary();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+function applyTheme(theme) {
+  const root = document.documentElement;
+  if (theme === 'auto') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+  } else {
+    root.setAttribute('data-theme', theme);
+  }
+  updateThemeButton();
+  updateMobileSummary();
+}
+function getSavedTheme() {
+  return localStorage.getItem(THEME_KEY) || 'auto';
+}
+function cycleTheme() {
+  const current = getSavedTheme();
+  const next = current === 'auto' ? 'dark' : current === 'dark' ? 'light' : 'auto';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+}
+function updateThemeButton() {
+  const btn = $('btnTheme');
+  if (!btn) return;
+  const saved = getSavedTheme();
+  const applied = document.documentElement.getAttribute('data-theme') || 'dark';
+  if (saved === 'auto') btn.textContent = `🖥️ Tema automático (${applied === 'dark' ? 'oscuro' : 'claro'})`;
+  else if (saved === 'dark') btn.textContent = '🌙 Tema oscuro';
+  else btn.textContent = '☀️ Tema claro';
+}
+function initTheme() {
+  applyTheme(getSavedTheme());
+  $('btnTheme')?.addEventListener('click', cycleTheme);
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+  media.addEventListener?.('change', () => {
+    if (getSavedTheme() === 'auto') applyTheme('auto');
+  });
+}
+function syncMobileButtons() {
+  const back = $('mobileBackBtn');
+  const next = $('mobileNextBtn');
+  if (!back || !next) return;
+  back.disabled = currentStep === 0;
+  back.style.opacity = currentStep === 0 ? '0.55' : '1';
+  if (currentStep >= STEPS - 2) next.textContent = currentStep === STEPS - 1 ? '⚡ Recalcular' : 'Ver resultado →';
+  else next.textContent = 'Siguiente →';
+}
+function initMobileNav() {
+  $('mobileBackBtn')?.addEventListener('click', () => {
+    if (currentStep > 0) goTo(currentStep - 1);
+  });
+  $('mobileNextBtn')?.addEventListener('click', () => {
+    if (currentStep >= STEPS - 2) calcular();
+    else goTo(currentStep + 1);
+  });
+  syncMobileButtons();
+}
+function updateMobileSummary() {
+  const step = $('mobileStepIndicator');
+  const state = $('mobileStateIndicator');
+  const theme = $('mobileThemeIndicator');
+  if (step) step.textContent = `${String(currentStep + 1).padStart(2, '0')} / ${String(STEPS).padStart(2, '0')}`;
+  if (state) state.textContent = currentStep === STEPS - 1 ? 'Resultado listo' : currentStep === STEPS - 2 ? 'Listo para calcular' : 'En edición';
+  if (theme) {
+    const saved = getSavedTheme();
+    const applied = document.documentElement.getAttribute('data-theme') || 'dark';
+    theme.textContent = saved === 'auto' ? `Auto · ${applied === 'dark' ? 'oscuro' : 'claro'}` : (saved === 'dark' ? 'Oscuro' : 'Claro');
+  }
 }
 
 document.querySelectorAll('.nav-link').forEach(btn => {
@@ -315,7 +389,7 @@ function calcular() {
 
   render(ultimoResultado);
   goTo(6);
-  localStorage.setItem('renta_v4_data', JSON.stringify(serializarFormulario()));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(serializarFormulario()));
 }
 
 function render(res) {
@@ -436,7 +510,7 @@ function exportarJSON() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `simulacion-renta-v4-${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `simulacion-renta-v5-${new Date().toISOString().slice(0,10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -452,12 +526,12 @@ function resetForm() {
   $('detalleTabla').innerHTML = '';
   $('consejosContainer').innerHTML = '';
   $('resultadoImporte').textContent = fmt(0);
-  $('resultadoTexto').textContent = 'Pulsa “Calcular v4”.';
+  $('resultadoTexto').textContent = 'Pulsa “Calcular v5”.';
   $('heroResult').classList.remove('pagar', 'devolver');
   $('obligacionBox').className = 'status-box neutral';
   $('obligacionBox').textContent = 'Completa el formulario para estimar si estás obligado a declarar.';
   $('miniMetrics').innerHTML = '';
-  localStorage.removeItem('renta_v4_data');
+  localStorage.removeItem(STORAGE_KEY);
   goTo(0);
 }
 
@@ -468,14 +542,18 @@ $('btnCalcular').addEventListener('click', calcular);
 $('btnExportar').addEventListener('click', exportarJSON);
 $('btnImprimir').addEventListener('click', () => window.print());
 $('btnReset').addEventListener('click', resetForm);
+window.addEventListener('resize', updateMobileSummary);
 
 (function init() {
   moneyIds.forEach(id => { if ($(id) && !$(id).value) $(id).value = '0'; });
   $('campoSegundoPagador').style.display = 'none';
-  const saved = localStorage.getItem('renta_v4_data');
+  initTheme();
+  initMobileNav();
+  const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     try { cargarFormulario(JSON.parse(saved)); } catch (_) {}
     $('campoSegundoPagador').style.display = $('numPagadores').value === '2' ? 'grid' : 'none';
   }
   updateProgress();
+  updateMobileSummary();
 })();
